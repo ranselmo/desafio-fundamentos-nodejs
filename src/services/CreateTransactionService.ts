@@ -1,6 +1,18 @@
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import Transaction from '../models/Transaction';
 
+interface CreateTransactionServiceDTO {
+  title: string;
+  value: number;
+  type: 'income' | 'outcome';
+}
+
+interface Request {
+  title: string;
+  value: number;
+  type: 'income' | 'outcome';
+}
+
 class CreateTransactionService {
   private transactionsRepository: TransactionsRepository;
 
@@ -8,8 +20,24 @@ class CreateTransactionService {
     this.transactionsRepository = transactionsRepository;
   }
 
-  public execute(): Transaction {
-    // TODO
+  public execute({
+    title,
+    value,
+    type,
+  }: CreateTransactionServiceDTO): Transaction {
+    const transaction = this.transactionsRepository.create({
+      title,
+      value,
+      type,
+    });
+
+    const { total } = this.transactionsRepository.getBalance();
+
+    if (type === 'outcome' && value > total) {
+      throw Error('Transaction is not be able completed');
+    }
+
+    return transaction;
   }
 }
 
